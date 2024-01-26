@@ -38,4 +38,22 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)
     )
     Ok(views.html.pages.Category(vv))
   }
+
+  def create(): Action[AnyContent] = Action { implicit req =>
+    val vv = ViewValueHome(
+      title  = "新規作成",
+      cssSrc = Seq("main.css"),
+      jsSrc  = Seq("main.js")
+    )
+    Ok(views.html.pages.Create(vv))
+  }
+
+  def edit(): Action[AnyContent] = Action { implicit req =>
+    val vv = ViewValueHome(
+      title  = "編集",
+      cssSrc = Seq("main.css"),
+      jsSrc  = Seq("main.js")
+    )
+    Ok(views.html.pages.Edit(vv))
+  }
 }

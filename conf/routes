@@ -11,3 +11,5 @@ GET     /assets/*file                 controllers.Assets.versioned(path="/public
 
 GET     /list                    controllers.HomeController.list
 GET     /category                controllers.HomeController.category
+GET     /create                  controllers.HomeController.create
+GET     /edit                    controllers.HomeController.edit
