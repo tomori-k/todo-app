@@ -1,18 +1,16 @@
-/**
- *
- * to do sample project
- *
- */
+/** to do sample project
+  */
 
 package controllers
 
-import javax.inject._
+import model.ViewValueHome
 import play.api.mvc._
 
-import model.ViewValueHome
+import javax.inject._
 
 @Singleton
-class HomeController @Inject()(val controllerComponents: ControllerComponents) extends BaseController {
+class HomeController @Inject() (val controllerComponents: ControllerComponents)
+    extends BaseController {
 
   def index() = Action { implicit req =>
     val vv = ViewValueHome(
@@ -20,6 +18,24 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
       cssSrc = Seq("main.css"),
       jsSrc  = Seq("main.js")
     )
-    Ok(views.html.Home(vv))
+    Ok(views.html.pages.Home(vv))
+  }
+
+  def list(): Action[AnyContent] = Action { implicit req =>
+    val vv = ViewValueHome(
+      title  = "TODO",
+      cssSrc = Seq("main.css"),
+      jsSrc  = Seq("main.js")
+    )
+    Ok(views.html.pages.List(vv))
+  }
+
+  def category(): Action[AnyContent] = Action { implicit req =>
+    val vv = ViewValueHome(
+      title  = "カテゴリー",
+      cssSrc = Seq("main.css"),
+      jsSrc  = Seq("main.js")
+    )
+    Ok(views.html.pages.Category(vv))
   }
 }
