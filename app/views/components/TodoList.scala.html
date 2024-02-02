@@ -1,12 +1,12 @@
-@import model._
+@import lib.model.Todo
 
 @*
 TodoList
 *@
-@(todoItems: Seq[TodoItem])
+@(todoItems: Seq[Todo])
 
 <ul>
-    @for(todoItem <- todoItems) {
-    <li>@todoItem.title</li>
-    }
+  @for(todoItem <- todoItems) {
+  <li>@todoItem.title</li>
+  }
 </ul>

@@ -7,10 +7,12 @@ import model.ViewValueHome
 import play.api.mvc._
 
 import javax.inject._
+import scala.concurrent.ExecutionContext
 
 @Singleton
-class HomeController @Inject() (val controllerComponents: ControllerComponents)
-    extends BaseController {
+class HomeController @Inject() (val controllerComponents: ControllerComponents)(
+    implicit executionContext: ExecutionContext
+) extends BaseController {
 
   def index() = Action { implicit req =>
     val vv = ViewValueHome(
@@ -21,13 +23,17 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)
     Ok(views.html.pages.Home(vv))
   }
 
-  def list(): Action[AnyContent] = Action { implicit req =>
+  def list(): Action[AnyContent] = Action async { implicit req =>
     val vv = ViewValueHome(
       title  = "TODO",
       cssSrc = Seq("main.css"),
       jsSrc  = Seq("main.js")
     )
-    Ok(views.html.pages.List(vv))
+    for {
+      todoItems <- lib.persistence.onMySQL.TodoRepository.getAll()
+    } yield {
+      Ok(views.html.pages.List(vv, todoItems.map(x => x.v)))
+    }
   }
 
   def category(): Action[AnyContent] = Action { implicit req =>
