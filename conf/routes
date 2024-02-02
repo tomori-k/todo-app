@@ -13,3 +13,4 @@ GET     /list                    controllers.HomeController.list
 GET     /category                controllers.HomeController.category
 GET     /create                  controllers.HomeController.create
 GET     /edit                    controllers.HomeController.edit
+POST    /create                  controllers.HomeController.postCreate

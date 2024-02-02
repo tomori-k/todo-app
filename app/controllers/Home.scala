@@ -3,16 +3,21 @@
 
 package controllers
 
+import lib.model.{Todo, TodoState}
 import model.ViewValueHome
+import play.api.data.Form
+import play.api.data.Forms.{nonEmptyText, tuple}
+import play.api.i18n.I18nSupport
 import play.api.mvc._
 
 import javax.inject._
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class HomeController @Inject() (val controllerComponents: ControllerComponents)(
     implicit executionContext: ExecutionContext
-) extends BaseController {
+) extends BaseController
+    with I18nSupport {
 
   def index() = Action { implicit req =>
     val vv = ViewValueHome(
@@ -45,13 +50,53 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
     Ok(views.html.pages.Category(vv))
   }
 
+  val createForm: Form[(String, String)] = Form(
+    tuple(
+      "title" -> nonEmptyText,
+      "body"  -> nonEmptyText
+    )
+  )
+
   def create(): Action[AnyContent] = Action { implicit req =>
     val vv = ViewValueHome(
       title  = "新規作成",
       cssSrc = Seq("main.css"),
       jsSrc  = Seq("main.js")
     )
-    Ok(views.html.pages.Create(vv))
+    Ok(views.html.pages.Create(vv, createForm))
+  }
+
+  def postCreate(): Action[AnyContent] = Action async { implicit req =>
+    createForm
+      .bindFromRequest()
+      .fold(
+        (formWithErrors: Form[(String, String)]) => {
+          val vv = ViewValueHome(
+            title  = "新規作成",
+            cssSrc = Seq("main.css"),
+            jsSrc  = Seq("main.js")
+          )
+          Future.successful(
+            BadRequest(views.html.pages.Create(vv, formWithErrors))
+          )
+        },
+        (formData: (String, String)) => {
+          lib.persistence.onMySQL.TodoRepository
+            .add(
+              new Todo(
+                id         = None,
+                categoryId = 0,
+                title      = formData._1,
+                body       = formData._2,
+                state      = TodoState.Todo
+              ).toWithNoId
+            )
+            .map(
+              // 追加が完了したら一覧画面へリダイレクト
+              _ => Redirect(routes.HomeController.list())
+            )
+        }
+      )
   }
 
   def edit(): Action[AnyContent] = Action { implicit req =>
