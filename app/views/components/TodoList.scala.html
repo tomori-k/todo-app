@@ -1,0 +1,12 @@
+@import model._
+
+@*
+TodoList
+*@
+@(todoItems: Seq[TodoItem])
+
+<ul>
+    @for(todoItem <- todoItems) {
+    <li>@todoItem.title</li>
+    }
+</ul>

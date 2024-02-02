@@ -1,0 +1,6 @@
+@import model._
+
+@(vv: model.ViewValueCommon)
+@common.Default(vv){
+@components.TodoList((1 to 10).map(i => TodoItem(i.toString + "title", i.toString + "body", TodoState(), TodoCategory())))
+}
