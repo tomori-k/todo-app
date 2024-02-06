@@ -7,6 +7,6 @@ TodoList
 
 <ul>
   @for(todoItem <- todoItems) {
-  <li>@todoItem.title</li>
+  <li><a href="/todo/@todoItem.id">@todoItem.title</a></li>
   }
 </ul>

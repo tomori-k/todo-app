@@ -12,5 +12,7 @@ GET     /assets/*file                 controllers.Assets.versioned(path="/public
 GET     /list                    controllers.HomeController.list
 GET     /category                controllers.HomeController.category
 GET     /create                  controllers.HomeController.create
-GET     /edit                    controllers.HomeController.edit
+GET     /edit/$id<[0-9]+>        controllers.HomeController.edit(id: Long)
+GET     /todo/$id<[0-9]+>        controllers.HomeController.todo(id: Long)
 POST    /create                  controllers.HomeController.postCreate
+PUT     /update                  controllers.HomeController.update

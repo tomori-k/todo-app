@@ -1,0 +1,12 @@
+@*
+* Todo Page
+*@
+
+@import lib.model.Todo
+
+@(vv: model.ViewValueCommon, todo: Todo)
+
+@common.Default(vv) {
+<p>@todo.body</p>
+<a href="/edit/@todo.id">編集</a>
+}

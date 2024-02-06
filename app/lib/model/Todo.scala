@@ -16,6 +16,6 @@ case class Todo(
 ) extends EntityModel[Id]
 
 object Todo {
-  val Id: Identity[Id] = the[Identity[Id]]
+  val Id = the[Identity[Id]]
   type Id = Long @@ Todo
 }

@@ -99,12 +99,45 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
       )
   }
 
-  def edit(): Action[AnyContent] = Action { implicit req =>
+  def edit(id: Long): Action[AnyContent] = Action async { implicit req =>
     val vv = ViewValueHome(
       title  = "編集",
       cssSrc = Seq("main.css"),
       jsSrc  = Seq("main.js")
     )
-    Ok(views.html.pages.Edit(vv))
+    for {
+      todoItem <- lib.persistence.onMySQL.TodoRepository.get(Todo.Id(id))
+    } yield {
+      todoItem match {
+        case Some(v) => Ok(views.html.pages.Edit(vv, v.v))
+        case None    => Ok("Not FOUND")
+      }
+    }
+  }
+
+  def todo(id: Long): Action[AnyContent] = Action async { implicit req =>
+    for {
+      todoItem <- lib.persistence.onMySQL.TodoRepository.get(Todo.Id(id))
+    } yield {
+      todoItem match {
+        case Some(v) => {
+          val vv = ViewValueHome(
+            title  = v.v.title,
+            cssSrc = Seq("main.css"),
+            jsSrc  = Seq("main.js")
+          )
+          Ok(views.html.pages.TodoView(vv, v.v))
+        }
+        case None    => Ok("Not FOUND")
+      }
+    }
+  }
+
+  def update(): Action[AnyContent] = Action { implicit req =>
+//    req.body.asJson.map(x => x.transform())
+//    lib.persistence.onMySQL.TodoRepository
+//      .update()
+//      .map(_ => Redirect(routes.HomeController.list()))
+    Ok("")
   }
 }
