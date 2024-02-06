@@ -4,6 +4,18 @@
 
 @import lib.model.Todo
 
-@(vv: model.ViewValueCommon, todo: Todo)
+@(vv: model.ViewValueCommon, id: Long, form: Form[(String, String)])(implicit messageProvider: MessagesProvider, requestHeader: RequestHeader)
+
 @common.Default(vv){
+@helper.form(action = controllers.routes.HomeController.update(id)) {
+@helper.CSRF.formField
+@helper.inputText(form("title"))
+@helper.textarea(form("body"),
+'rows -> 7,
+'cols -> 40,
+'_label -> "TODO" ,
+'_showConstraints -> false
+)
+<input type="submit" value="更新" formmethod="post">
+}
 }

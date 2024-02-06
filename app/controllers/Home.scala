@@ -57,6 +57,13 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
     )
   )
 
+  val updateForm: Form[(String, String)] = Form(
+    tuple(
+      "title" -> nonEmptyText,
+      "body"  -> nonEmptyText
+    )
+  )
+
   def create(): Action[AnyContent] = Action { implicit req =>
     val vv = ViewValueHome(
       title  = "新規作成",
@@ -109,7 +116,15 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
       todoItem <- lib.persistence.onMySQL.TodoRepository.get(Todo.Id(id))
     } yield {
       todoItem match {
-        case Some(v) => Ok(views.html.pages.Edit(vv, v.v))
+        case Some(v) =>
+          Ok(
+            views.html.pages
+              .Edit(
+                vv,
+                v.v.toEmbeddedId.id,
+                updateForm.fill((v.v.title, v.v.body))
+              )
+          )
         case None    => Ok("Not FOUND")
       }
     }
@@ -133,11 +148,34 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
     }
   }
 
-  def update(): Action[AnyContent] = Action { implicit req =>
-//    req.body.asJson.map(x => x.transform())
-//    lib.persistence.onMySQL.TodoRepository
-//      .update()
-//      .map(_ => Redirect(routes.HomeController.list()))
-    Ok("")
+  def update(id: Long): Action[AnyContent] = Action async { implicit req =>
+    updateForm
+      .bindFromRequest()
+      .fold(
+        (formWithErrors: Form[(String, String)]) => {
+          val vv = ViewValueHome(
+            title  = "編集",
+            cssSrc = Seq("main.css"),
+            jsSrc  = Seq("main.js")
+          )
+          Future.successful(
+            BadRequest(views.html.pages.Edit(vv, id, formWithErrors))
+          )
+        },
+        (data: (String, String)) => {
+          lib.persistence.onMySQL.TodoRepository
+            .get(Todo.Id(id))
+            .flatMap {
+              case Some(x) =>
+                lib.persistence.onMySQL.TodoRepository
+                  .update(x.map(_.copy(title = data._1, body = data._2)))
+                  .map(_ => Redirect(routes.HomeController.list()))
+              case None    =>
+                Future.successful(
+                  NotFound("Not a such ID")
+                )
+            }
+        }
+      )
   }
 }
