@@ -12,6 +12,7 @@ import play.api.mvc._
 
 import javax.inject._
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 @Singleton
 class HomeController @Inject() (val controllerComponents: ControllerComponents)(
@@ -177,5 +178,20 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
             }
         }
       )
+  }
+
+  def delete(): Action[AnyContent] = Action async { implicit req =>
+    req.body.asFormUrlEncoded
+      .get("id")
+      .headOption
+      .flatMap(x => Try(x.toLong).toOption) match {
+      case Some(id) =>
+        for {
+          result <- lib.persistence.onMySQL.TodoRepository
+                      .remove(Todo.Id(id))
+                      .map(_ => Redirect(routes.HomeController.list()))
+        } yield result
+      case None     => Future.successful(NotFound("No such a ID"))
+    }
   }
 }

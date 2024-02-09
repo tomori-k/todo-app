@@ -1,12 +1,16 @@
 @*
 * Todo Page
 *@
-
 @import lib.model.Todo
 
-@(vv: model.ViewValueCommon, todo: Todo)
+@(vv: model.ViewValueCommon, todo: Todo)(implicit messagesProvider: MessagesProvider, requestHeader: RequestHeader)
 
 @common.Default(vv) {
-<p>@todo.body</p>
-<a href="/edit/@todo.id">編集</a>
+  <p>@todo.body</p>
+  <a href="/edit/@todo.id">編集</a>
+
+  @helper.form(action = controllers.routes.HomeController.delete()) {
+    @helper.CSRF.formField <input type="hidden" value="@todo.id" name="id">
+    <button type="submit">削除</button>
+  }
 }
