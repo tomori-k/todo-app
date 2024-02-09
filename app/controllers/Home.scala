@@ -3,10 +3,11 @@
 
 package controllers
 
+import lib.model.TodoState.toByte
 import lib.model.{Todo, TodoCategory, TodoState}
 import model.ViewValueHome
 import play.api.data.Form
-import play.api.data.Forms.{longNumber, nonEmptyText, tuple}
+import play.api.data.Forms.{byteNumber, longNumber, nonEmptyText, tuple}
 import play.api.i18n.I18nSupport
 import play.api.mvc._
 
@@ -66,7 +67,7 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
     Ok(views.html.pages.Category(vv))
   }
 
-  val createForm: Form[(String, String, Long)] = Form(
+  private val createForm: Form[(String, String, Long)] = Form(
     tuple(
       "title"    -> nonEmptyText,
       "body"     -> nonEmptyText,
@@ -74,10 +75,12 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
     )
   )
 
-  val updateForm: Form[(String, String)] = Form(
+  private val updateForm: Form[(String, String, Long, Byte)] = Form(
     tuple(
-      "title" -> nonEmptyText,
-      "body"  -> nonEmptyText
+      "title"    -> nonEmptyText,
+      "body"     -> nonEmptyText,
+      "category" -> longNumber,
+      "state"    -> byteNumber
     )
   )
 
@@ -135,7 +138,8 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
       jsSrc  = Seq("main.js")
     )
     for {
-      todoItem <- lib.persistence.onMySQL.TodoRepository.get(Todo.Id(id))
+      todoItem   <- lib.persistence.onMySQL.TodoRepository.get(Todo.Id(id))
+      categories <- lib.persistence.onMySQL.TodoCategoryRepository.getAll()
     } yield {
       todoItem match {
         case Some(v) =>
@@ -144,7 +148,10 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
               .Edit(
                 vv,
                 v.v.toEmbeddedId.id,
-                updateForm.fill((v.v.title, v.v.body))
+                updateForm.fill(
+                  (v.v.title, v.v.body, v.v.categoryId, toByte(v.v.state))
+                ),
+                categories.map(_.v)
               )
           )
         case None    => Ok("Not FOUND")
@@ -174,23 +181,37 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
     updateForm
       .bindFromRequest()
       .fold(
-        (formWithErrors: Form[(String, String)]) => {
+        formWithErrors => {
           val vv = ViewValueHome(
             title  = "編集",
             cssSrc = Seq("main.css"),
             jsSrc  = Seq("main.js")
           )
-          Future.successful(
-            BadRequest(views.html.pages.Edit(vv, id, formWithErrors))
+          for {
+            categories <-
+              lib.persistence.onMySQL.TodoCategoryRepository.getAll()
+          } yield BadRequest(
+            views.html.pages.Edit(vv, id, formWithErrors, categories.map(_.v))
           )
         },
-        (data: (String, String)) => {
+        data => {
+          // TODO: state に変な値が入ってきた時の対応、今は例外が出る
+
           lib.persistence.onMySQL.TodoRepository
             .get(Todo.Id(id))
             .flatMap {
               case Some(x) =>
                 lib.persistence.onMySQL.TodoRepository
-                  .update(x.map(_.copy(title = data._1, body = data._2)))
+                  .update(
+                    x.map(
+                      _.copy(
+                        title      = data._1,
+                        body       = data._2,
+                        categoryId = data._3,
+                        state      = TodoState.from(data._4)
+                      )
+                    )
+                  )
                   .map(_ => Redirect(routes.HomeController.list()))
               case None    =>
                 Future.successful(
