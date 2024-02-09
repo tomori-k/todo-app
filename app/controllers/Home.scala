@@ -3,7 +3,7 @@
 
 package controllers
 
-import lib.model.{Todo, TodoState}
+import lib.model.{Todo, TodoCategory, TodoState}
 import model.ViewValueHome
 import play.api.data.Form
 import play.api.data.Forms.{nonEmptyText, tuple}
@@ -12,7 +12,7 @@ import play.api.mvc._
 
 import javax.inject._
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 @Singleton
 class HomeController @Inject() (val controllerComponents: ControllerComponents)(
@@ -36,9 +36,24 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
       jsSrc  = Seq("main.js")
     )
     for {
-      todoItems <- lib.persistence.onMySQL.TodoRepository.getAll()
+      todoItems      <- lib.persistence.onMySQL.TodoRepository.getAll()
+      todoCategories <-
+        Future.sequence(
+          todoItems
+            .map(todo =>
+              lib.persistence.onMySQL.TodoCategoryRepository
+                .get(TodoCategory.Id(todo.v.categoryId))
+            )
+            .map(_.map { Success(_) }.recover { case t => Failure(t) })
+        )
     } yield {
-      Ok(views.html.pages.List(vv, todoItems.map(x => x.v)))
+      val todoWithCategory = todoItems
+        .zip(todoCategories.map(x => x.toOption.flatten))
+        .map(x => (x._1.v, x._2.map(_.v)))
+      Ok(
+        views.html.pages
+          .List(vv, todoWithCategory)
+      )
     }
   }
 

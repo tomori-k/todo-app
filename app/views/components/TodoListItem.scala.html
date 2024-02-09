@@ -1,5 +1,6 @@
-@import lib.model.{Todo, TodoState}
-@(todo: Todo)
+@import lib.model.{Todo, TodoCategory, TodoState}
+
+@(todo: Todo, category: Option[TodoCategory])
 
 <li>
   <a href="/todo/@todo.id">
@@ -10,7 +11,7 @@
       case TodoState.InProgress => "進行中"
       case TodoState.Done => "完了"
     }) <br>
-    カテゴリ:@todo.categoryId
+    カテゴリ: @category.map(_.name).getOrElse("NONE")
   </a>
 </li>
 

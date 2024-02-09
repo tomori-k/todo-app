@@ -1,12 +1,12 @@
 @*
 TodoList
 *@
-@import lib.model.Todo
+@import lib.model.{Todo, TodoCategory}
 @import views.html.components.TodoListItem
-@(todoItems: Seq[Todo])
+@(todoItems: Seq[(Todo, Option[TodoCategory])])
 
 <ul>
   @for(todoItem <- todoItems) {
-    @TodoListItem(todoItem)
+    @TodoListItem(todoItem._1, todoItem._2)
   }
 </ul>
