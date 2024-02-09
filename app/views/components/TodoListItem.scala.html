@@ -12,6 +12,7 @@
       case TodoState.Done => "完了"
     }) <br>
     カテゴリ: @category.map(_.name).getOrElse("NONE")
+    カテゴリの色: @category.map(_.color).getOrElse(0)
   </a>
 </li>
 
