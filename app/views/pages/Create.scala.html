@@ -1,18 +1,19 @@
 @*
 * Create Page
 *@
-
-@(vv: model.ViewValueCommon, form: Form[(String, String)])(implicit messageProvider: MessagesProvider, requestHeader: RequestHeader)
-@common.Default(vv){
-@helper.form(action = controllers.routes.HomeController.postCreate()) {
-@helper.CSRF.formField
-@helper.inputText(form("title"))
-@helper.textarea(form("body"),
-'rows -> 7,
-'cols -> 40,
-'_label -> "TODO" ,
-'_showConstraints -> false
-)
-<input type="submit" value="追加">
-}
-}
+@import lib.model.TodoCategory
+@(vv: model.ViewValueCommon, form: Form[(String, String, Long)], categories: Seq[TodoCategory])(implicit messageProvider: MessagesProvider, requestHeader: RequestHeader)
+  @common.Default(vv) {
+    @helper.form(action = controllers.routes.HomeController.postCreate()) {
+      @helper.CSRF.formField
+      @helper.inputText(form("title"))
+      @helper.textarea(form("body"),
+        'rows -> 7,
+        'cols -> 40,
+        '_label -> "TODO",
+        '_showConstraints -> false
+      )
+      @helper.select(field = form("category"), options = categories.map(x => (x.id.get.toString, x.name)))
+      <input type="submit" value="追加">
+    }
+  }

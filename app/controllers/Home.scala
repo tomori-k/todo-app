@@ -6,7 +6,7 @@ package controllers
 import lib.model.{Todo, TodoCategory, TodoState}
 import model.ViewValueHome
 import play.api.data.Form
-import play.api.data.Forms.{nonEmptyText, tuple}
+import play.api.data.Forms.{longNumber, nonEmptyText, tuple}
 import play.api.i18n.I18nSupport
 import play.api.mvc._
 
@@ -66,10 +66,11 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
     Ok(views.html.pages.Category(vv))
   }
 
-  val createForm: Form[(String, String)] = Form(
+  val createForm: Form[(String, String, Long)] = Form(
     tuple(
-      "title" -> nonEmptyText,
-      "body"  -> nonEmptyText
+      "title"    -> nonEmptyText,
+      "body"     -> nonEmptyText,
+      "category" -> longNumber
     )
   )
 
@@ -80,35 +81,40 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
     )
   )
 
-  def create(): Action[AnyContent] = Action { implicit req =>
+  def create(): Action[AnyContent] = Action async { implicit req =>
     val vv = ViewValueHome(
       title  = "新規作成",
       cssSrc = Seq("main.css"),
       jsSrc  = Seq("main.js")
     )
-    Ok(views.html.pages.Create(vv, createForm))
+    for {
+      categories <- lib.persistence.onMySQL.TodoCategoryRepository.getAll()
+    } yield Ok(views.html.pages.Create(vv, createForm, categories.map(_.v)))
   }
 
   def postCreate(): Action[AnyContent] = Action async { implicit req =>
     createForm
       .bindFromRequest()
       .fold(
-        (formWithErrors: Form[(String, String)]) => {
+        formWithErrors => {
           val vv = ViewValueHome(
             title  = "新規作成",
             cssSrc = Seq("main.css"),
             jsSrc  = Seq("main.js")
           )
-          Future.successful(
-            BadRequest(views.html.pages.Create(vv, formWithErrors))
+          for {
+            categories <-
+              lib.persistence.onMySQL.TodoCategoryRepository.getAll()
+          } yield BadRequest(
+            views.html.pages.Create(vv, formWithErrors, categories.map(_.v))
           )
         },
-        (formData: (String, String)) => {
+        formData => {
           lib.persistence.onMySQL.TodoRepository
             .add(
               new Todo(
                 id         = None,
-                categoryId = 0,
+                categoryId = formData._3,
                 title      = formData._1,
                 body       = formData._2,
                 state      = TodoState.Todo
