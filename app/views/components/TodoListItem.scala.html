@@ -1,0 +1,16 @@
+@import lib.model.{Todo, TodoState}
+@(todo: Todo)
+
+<li>
+  <a href="/todo/@todo.id">
+    @todo.title <br>
+    @todo.body <br>
+    @(todo.state match {
+      case TodoState.Todo => "TODO(着手前)"
+      case TodoState.InProgress => "進行中"
+      case TodoState.Done => "完了"
+    }) <br>
+    カテゴリ:@todo.categoryId
+  </a>
+</li>
+

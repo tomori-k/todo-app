@@ -1,12 +1,12 @@
-@import lib.model.Todo
-
 @*
 TodoList
 *@
+@import lib.model.Todo
+@import views.html.components.TodoListItem
 @(todoItems: Seq[Todo])
 
 <ul>
   @for(todoItem <- todoItems) {
-  <li><a href="/todo/@todoItem.id">@todoItem.title</a></li>
+    @TodoListItem(todoItem)
   }
 </ul>
