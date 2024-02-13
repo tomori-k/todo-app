@@ -8,13 +8,25 @@ import lib.model.{Todo, TodoCategory, TodoState}
 import lib.persistence.default._
 import model.ViewValueHome
 import play.api.data.Form
-import play.api.data.Forms.{byteNumber, longNumber, nonEmptyText, tuple}
+import play.api.data.Forms.{
+  byteNumber,
+  longNumber,
+  nonEmptyText,
+  mapping,
+  tuple
+}
 import play.api.i18n.I18nSupport
 import play.api.mvc._
 
 import javax.inject._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
+
+case class CreateFormData(
+    title:      String,
+    body:       String,
+    categoryId: Long
+)
 
 @Singleton
 class HomeController @Inject() (val controllerComponents: ControllerComponents)(
@@ -68,12 +80,12 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
     Ok(views.html.pages.Category(vv))
   }
 
-  private val createForm: Form[(String, String, Long)] = Form(
-    tuple(
+  private val createForm: Form[CreateFormData] = Form(
+    mapping(
       "title"    -> nonEmptyText,
       "body"     -> nonEmptyText,
       "category" -> longNumber
-    )
+    )(CreateFormData.apply)(CreateFormData.unapply)
   )
 
   private val updateForm: Form[(String, String, Long, Byte)] = Form(
@@ -118,9 +130,9 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
             .add(
               new Todo(
                 id         = None,
-                categoryId = TodoCategory.Id(formData._3),
-                title      = formData._1,
-                body       = formData._2,
+                categoryId = TodoCategory.Id(formData.categoryId),
+                title      = formData.title,
+                body       = formData.body,
                 state      = TodoState.Todo
               ).toWithNoId
             )
