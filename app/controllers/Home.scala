@@ -201,29 +201,28 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
           )
         },
         data => {
-          // TODO: state に変な値が入ってきた時の対応、今は例外が出る
-
-          TodoRepository
-            .get(Todo.Id(id))
-            .flatMap {
-              case Some(x) =>
-                TodoRepository
-                  .update(
-                    x.map(
-                      _.copy(
-                        title      = data._1,
-                        body       = data._2,
-                        categoryId = data._3,
-                        state      = TodoState.from(data._4)
-                      )
-                    )
-                  )
-                  .map(_ => Redirect(routes.HomeController.list()))
-              case None    =>
-                Future.successful(
-                  NotFound("Not a such ID")
-                )
-            }
+          for {
+            todo   <- TodoRepository.get(Todo.Id(id))
+            result <- todo match {
+                        case Some(x) =>
+                          TodoRepository
+                            .update(
+                              x.map(
+                                _.copy(
+                                  title      = data._1,
+                                  body       = data._2,
+                                  categoryId = data._3,
+                                  state      = TodoState.from(data._4)
+                                )
+                              )
+                            )
+                            .map(_ => Redirect(routes.HomeController.list()))
+                        case None    =>
+                          Future.successful(
+                            NotFound("Not a such ID")
+                          )
+                      }
+          } yield result
         }
       )
   }
