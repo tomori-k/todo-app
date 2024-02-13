@@ -143,19 +143,24 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
       categories <- TodoCategoryRepository.getAll()
     } yield {
       todoItem match {
-        case Some(v) =>
+        case Some(todoEntity) =>
           Ok(
             views.html.pages
               .Edit(
                 vv,
-                v.v.toEmbeddedId.id,
+                todoEntity.id,
                 updateForm.fill(
-                  (v.v.title, v.v.body, v.v.categoryId, toByte(v.v.state))
+                  (
+                    todoEntity.v.title,
+                    todoEntity.v.body,
+                    todoEntity.v.categoryId,
+                    toByte(todoEntity.v.state)
+                  )
                 ),
                 categories.map(_.v)
               )
           )
-        case None    => Ok("Not FOUND")
+        case None             => Ok("Not FOUND")
       }
     }
   }
