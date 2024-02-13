@@ -233,11 +233,9 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
       .headOption
       .flatMap(x => Try(x.toLong).toOption) match {
       case Some(id) =>
-        for {
-          result <- TodoRepository
-                      .remove(Todo.Id(id))
-                      .map(_ => Redirect(routes.HomeController.list()))
-        } yield result
+        TodoRepository
+          .remove(Todo.Id(id))
+          .map(_ => Redirect(routes.HomeController.list()))
       case None     => Future.successful(NotFound("No such a ID"))
     }
   }
