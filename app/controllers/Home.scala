@@ -28,6 +28,13 @@ case class CreateFormData(
     categoryId: Long
 )
 
+case class UpdateFormData(
+    title:      String,
+    body:       String,
+    categoryId: Long,
+    stateValue: Byte
+)
+
 @Singleton
 class HomeController @Inject() (val controllerComponents: ControllerComponents)(
     implicit executionContext: ExecutionContext
@@ -88,13 +95,13 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
     )(CreateFormData.apply)(CreateFormData.unapply)
   )
 
-  private val updateForm: Form[(String, String, Long, Byte)] = Form(
-    tuple(
+  private val updateForm: Form[UpdateFormData] = Form(
+    mapping(
       "title"    -> nonEmptyText,
       "body"     -> nonEmptyText,
       "category" -> longNumber,
       "state"    -> byteNumber
-    )
+    )(UpdateFormData.apply)(UpdateFormData.unapply)
   )
 
   def create(): Action[AnyContent] = Action async { implicit req =>
@@ -162,11 +169,11 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
                 vv,
                 todoEntity.id,
                 updateForm.fill(
-                  (
-                    todoEntity.v.title,
-                    todoEntity.v.body,
-                    todoEntity.v.categoryId,
-                    toByte(todoEntity.v.state)
+                  UpdateFormData(
+                    title      = todoEntity.v.title,
+                    body       = todoEntity.v.body,
+                    categoryId = todoEntity.v.categoryId,
+                    stateValue = toByte(todoEntity.v.state)
                   )
                 ),
                 categories.map(_.v)
@@ -221,10 +228,10 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
                             .update(
                               x.map(
                                 _.copy(
-                                  title      = data._1,
-                                  body       = data._2,
-                                  categoryId = TodoCategory.Id(data._3),
-                                  state      = TodoState.from(data._4)
+                                  title      = data.title,
+                                  body       = data.body,
+                                  categoryId = TodoCategory.Id(data.categoryId),
+                                  state      = TodoState.from(data.stateValue)
                                 )
                               )
                             )
