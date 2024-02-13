@@ -26,7 +26,7 @@ case class TodoTable[P <: JdbcProfile]()(implicit val driver: P)
     /* @1 */
     def id         = column[Todo.Id]("id", O.UInt64, O.PrimaryKey, O.AutoInc)
     /* @2 */
-    def categoryId = column[Long]("category_id", O.UInt64)
+    def categoryId = column[TodoCategory.Id]("category_id", O.UInt64)
     /* @3 */
     def title      = column[String]("title", O.Utf8Char255)
     /* @4 */
@@ -40,7 +40,7 @@ case class TodoTable[P <: JdbcProfile]()(implicit val driver: P)
 
     type TableElementTuple = (
         Option[Todo.Id],
-        Long,
+        TodoCategory.Id,
         String,
         String,
         Byte,
@@ -54,7 +54,7 @@ case class TodoTable[P <: JdbcProfile]()(implicit val driver: P)
       (t: TableElementTuple) =>
         Todo(
           t._1,
-          t._2,
+          TodoCategory.Id(t._2),
           t._3,
           t._4,
           TodoState.from(t._5),

@@ -118,7 +118,7 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
             .add(
               new Todo(
                 id         = None,
-                categoryId = formData._3,
+                categoryId = TodoCategory.Id(formData._3),
                 title      = formData._1,
                 body       = formData._2,
                 state      = TodoState.Todo
@@ -211,7 +211,7 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
                                 _.copy(
                                   title      = data._1,
                                   body       = data._2,
-                                  categoryId = data._3,
+                                  categoryId = TodoCategory.Id(data._3),
                                   state      = TodoState.from(data._4)
                                 )
                               )
