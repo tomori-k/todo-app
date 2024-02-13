@@ -5,6 +5,7 @@ package controllers
 
 import lib.model.TodoState.toByte
 import lib.model.{Todo, TodoCategory, TodoState}
+import lib.persistence.default._
 import model.ViewValueHome
 import play.api.data.Form
 import play.api.data.Forms.{byteNumber, longNumber, nonEmptyText, tuple}
@@ -37,12 +38,12 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
       jsSrc  = Seq("main.js")
     )
     for {
-      todoItems      <- lib.persistence.onMySQL.TodoRepository.getAll()
+      todoItems      <- TodoRepository.getAll()
       todoCategories <-
         Future.sequence(
           todoItems
             .map(todo =>
-              lib.persistence.onMySQL.TodoCategoryRepository
+              TodoCategoryRepository
                 .get(TodoCategory.Id(todo.v.categoryId))
             )
             .map(_.map { Success(_) }.recover { case t => Failure(t) })
@@ -91,7 +92,7 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
       jsSrc  = Seq("main.js")
     )
     for {
-      categories <- lib.persistence.onMySQL.TodoCategoryRepository.getAll()
+      categories <- TodoCategoryRepository.getAll()
     } yield Ok(views.html.pages.Create(vv, createForm, categories.map(_.v)))
   }
 
@@ -107,13 +108,13 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
           )
           for {
             categories <-
-              lib.persistence.onMySQL.TodoCategoryRepository.getAll()
+              TodoCategoryRepository.getAll()
           } yield BadRequest(
             views.html.pages.Create(vv, formWithErrors, categories.map(_.v))
           )
         },
         formData => {
-          lib.persistence.onMySQL.TodoRepository
+          TodoRepository
             .add(
               new Todo(
                 id         = None,
@@ -138,8 +139,8 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
       jsSrc  = Seq("main.js")
     )
     for {
-      todoItem   <- lib.persistence.onMySQL.TodoRepository.get(Todo.Id(id))
-      categories <- lib.persistence.onMySQL.TodoCategoryRepository.getAll()
+      todoItem   <- TodoRepository.get(Todo.Id(id))
+      categories <- TodoCategoryRepository.getAll()
     } yield {
       todoItem match {
         case Some(v) =>
@@ -161,7 +162,7 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
 
   def todo(id: Long): Action[AnyContent] = Action async { implicit req =>
     for {
-      todoItem <- lib.persistence.onMySQL.TodoRepository.get(Todo.Id(id))
+      todoItem <- TodoRepository.get(Todo.Id(id))
     } yield {
       todoItem match {
         case Some(v) => {
@@ -189,7 +190,7 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
           )
           for {
             categories <-
-              lib.persistence.onMySQL.TodoCategoryRepository.getAll()
+              TodoCategoryRepository.getAll()
           } yield BadRequest(
             views.html.pages.Edit(vv, id, formWithErrors, categories.map(_.v))
           )
@@ -197,11 +198,11 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
         data => {
           // TODO: state に変な値が入ってきた時の対応、今は例外が出る
 
-          lib.persistence.onMySQL.TodoRepository
+          TodoRepository
             .get(Todo.Id(id))
             .flatMap {
               case Some(x) =>
-                lib.persistence.onMySQL.TodoRepository
+                TodoRepository
                   .update(
                     x.map(
                       _.copy(
@@ -229,7 +230,7 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
       .flatMap(x => Try(x.toLong).toOption) match {
       case Some(id) =>
         for {
-          result <- lib.persistence.onMySQL.TodoRepository
+          result <- TodoRepository
                       .remove(Todo.Id(id))
                       .map(_ => Redirect(routes.HomeController.list()))
         } yield result
