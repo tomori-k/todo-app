@@ -12,8 +12,9 @@ case class Todo(
     title:      String,
     body:       String,
     state:      Todo.TodoState,
-    updatedAt:  LocalDateTime = NOW,
-    createdAt:  LocalDateTime = NOW
+    updatedAt:  LocalDateTime        = NOW,
+    createdAt:  LocalDateTime        = NOW,
+    category:   Option[TodoCategory] = None
 ) extends EntityModel[Id]
 
 object Todo {

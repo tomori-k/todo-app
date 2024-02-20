@@ -1,7 +1,7 @@
-@import lib.model.{Todo, TodoCategory}
+@import lib.model.Todo
 @import model.ViewValueCommon
 
-@(vv: ViewValueCommon, todoList: Seq[(Todo, Option[TodoCategory])])
+@(vv: ViewValueCommon, todoList: Seq[Todo])
   @common.Default(vv) {
     @components.TodoList(todoList)
     <a href="/create">追加</a>

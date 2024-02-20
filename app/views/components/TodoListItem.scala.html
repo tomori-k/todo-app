@@ -1,14 +1,14 @@
-@import lib.model.{Todo, TodoCategory}
+@import lib.model.Todo
 
-@(todo: Todo, category: Option[TodoCategory])
+@(todo: Todo)
 
 <li>
   <a href="/todo/@todo.id">
     @todo.title <br>
     @todo.body <br>
     @todo.state.name <br>
-    カテゴリ: @category.map(_.name).getOrElse("NONE")
-    カテゴリの色: @category.map(_.color).getOrElse(0)
+    カテゴリ: @todo.category.map(_.name).getOrElse("NONE")
+    カテゴリの色: @todo.category.map(_.color).getOrElse(0)
   </a>
 </li>
 

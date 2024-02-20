@@ -2,7 +2,6 @@ package lib.persistence
 
 import ixias.persistence.SlickRepository
 import lib.model.Todo
-import lib.persistence.db.TodoTable
 import slick.jdbc.JdbcProfile
 
 import scala.concurrent.Future
@@ -26,6 +25,25 @@ case class TodoRepository[P <: JdbcProfile]()(implicit val driver: P)
   def getAll(): Future[Seq[EntityEmbeddedId]] =
     RunDBAction(TodoTable, "slave") { slick =>
       slick.result
+    }
+
+  /** すべての TODO を取得する
+    *
+    * TODO のカテゴリも一緒に取得する
+    */
+  def getAllWithCategory(): Future[Seq[EntityEmbeddedId]] =
+    DBAction(TodoTable) { case (db, todoQuery) =>
+      DBAction(TodoCategoryTable) { case (_, categoryQuery) =>
+        val joinedQuery =
+          todoQuery join categoryQuery on (_.categoryId === _.id)
+
+        val action = joinedQuery.result.map(_.map {
+          case (todoRecord, categoryRecord) =>
+            todoRecord.copy(category = Some(categoryRecord))
+        })
+
+        db.run(action)
+      }
     }
 
   /** Add Todo
