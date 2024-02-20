@@ -1,4 +1,4 @@
-@import lib.model.{Todo, TodoCategory, TodoState}
+@import lib.model.{Todo, TodoCategory}
 
 @(todo: Todo, category: Option[TodoCategory])
 
@@ -6,11 +6,7 @@
   <a href="/todo/@todo.id">
     @todo.title <br>
     @todo.body <br>
-    @(todo.state match {
-      case TodoState.Todo => "TODO(着手前)"
-      case TodoState.InProgress => "進行中"
-      case TodoState.Done => "完了"
-    }) <br>
+    @todo.state.name <br>
     カテゴリ: @category.map(_.name).getOrElse("NONE")
     カテゴリの色: @category.map(_.color).getOrElse(0)
   </a>

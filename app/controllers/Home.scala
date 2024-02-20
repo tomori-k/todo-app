@@ -3,7 +3,8 @@
 
 package controllers
 
-import lib.model.{Todo, TodoCategory, TodoState}
+import lib.model.Todo.TodoState
+import lib.model.{Todo, TodoCategory}
 import lib.persistence.default._
 import model.ViewValueHome
 import play.api.data.Form
