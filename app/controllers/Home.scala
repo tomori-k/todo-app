@@ -3,18 +3,11 @@
 
 package controllers
 
-import lib.model.TodoState.toByte
 import lib.model.{Todo, TodoCategory, TodoState}
 import lib.persistence.default._
 import model.ViewValueHome
 import play.api.data.Form
-import play.api.data.Forms.{
-  byteNumber,
-  longNumber,
-  nonEmptyText,
-  mapping,
-  tuple
-}
+import play.api.data.Forms.{longNumber, mapping, nonEmptyText, shortNumber}
 import play.api.i18n.I18nSupport
 import play.api.mvc._
 
@@ -32,7 +25,7 @@ case class UpdateFormData(
     title:      String,
     body:       String,
     categoryId: Long,
-    stateValue: Byte
+    stateValue: Short
 )
 
 @Singleton
@@ -100,7 +93,7 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
       "title"    -> nonEmptyText,
       "body"     -> nonEmptyText,
       "category" -> longNumber,
-      "state"    -> byteNumber
+      "state"    -> shortNumber
     )(UpdateFormData.apply)(UpdateFormData.unapply)
   )
 
@@ -173,7 +166,7 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
                     title      = todoEntity.v.title,
                     body       = todoEntity.v.body,
                     categoryId = todoEntity.v.categoryId,
-                    stateValue = toByte(todoEntity.v.state)
+                    stateValue = todoEntity.v.state.code
                   )
                 ),
                 categories.map(_.v)
@@ -231,7 +224,7 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
                                   title      = data.title,
                                   body       = data.body,
                                   categoryId = TodoCategory.Id(data.categoryId),
-                                  state      = TodoState.from(data.stateValue)
+                                  state      = TodoState(data.stateValue)
                                 )
                               )
                             )

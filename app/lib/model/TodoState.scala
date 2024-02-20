@@ -1,26 +1,24 @@
 package lib.model
 
-sealed trait TodoState
+import ixias.util.EnumStatus
 
-object TodoState {
-  case object Todo       extends TodoState
-  case object InProgress extends TodoState
-  case object Done       extends TodoState
+sealed abstract class TodoState(val code: Short, val name: String)
+    extends EnumStatus {
+  
+  import lib.model.TodoState._
 
-  def from(value: Byte): TodoState = {
-    value match {
+  def apply(code: Short): TodoState = {
+    code match {
       case 0 => Todo
       case 1 => InProgress
       case 2 => Done
-      case _ => throw new Exception(s"Invalid value: ${value}")
+      case _ => throw new Exception("No such a state code")
     }
   }
+}
 
-  def toByte(value: TodoState): Byte = {
-    value match {
-      case Todo       => 0
-      case InProgress => 1
-      case Done       => 2
-    }
-  }
+object TodoState extends EnumStatus.Of[TodoState] {
+  case object Todo       extends TodoState(code = 0, name = "TODO(着手前)")
+  case object InProgress extends TodoState(code = 1, name = "進行中")
+  case object Done       extends TodoState(code = 2, name = "完了")
 }
