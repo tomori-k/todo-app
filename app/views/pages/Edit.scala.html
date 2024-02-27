@@ -1,7 +1,21 @@
 @*
 * Edit Page
 *@
+@import lib.model.{Todo, TodoCategory}
+@(vv: model.ViewValueCommon, id: Long, form: Form[UpdateFormData], categories: Seq[TodoCategory])(implicit messageProvider: MessagesProvider, requestHeader: RequestHeader)
 
-@(vv: model.ViewValueCommon)
-@common.Default(vv){
-}
+  @common.Default(vv) {
+    @helper.form(action = controllers.routes.HomeController.update(id)) {
+      @helper.CSRF.formField
+      @helper.inputText(form("title"))
+      @helper.textarea(form("body"),
+        'rows -> 7,
+        'cols -> 40,
+        '_label -> "TODO",
+        '_showConstraints -> false
+      )
+      @helper.select(field = form("category"), options = categories.map(x => (x.id.get.toString, x.name)))
+      @helper.select(field = form("state"), options = Todo.TodoState.values.map(x => x.code.toString -> x.name))
+      <input type="submit" value="更新" formmethod="post">
+    }
+  }
