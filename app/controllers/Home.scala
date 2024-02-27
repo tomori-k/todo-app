@@ -141,7 +141,7 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
       todoItem   <- TodoRepository.get(Todo.Id(id))
       categories <- todoItem match {
                       case Some(_) => TodoCategoryRepository.getAll()
-                      case None    => Future.successful(Seq())
+                      case None    => Future.successful(Seq.empty)
                     }
     } yield {
       todoItem match {
