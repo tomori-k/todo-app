@@ -138,27 +138,30 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
       jsSrc  = Seq("main.js")
     )
     for {
-      todoItem   <- TodoRepository.get(Todo.Id(id))
-      categories <- TodoCategoryRepository.getAll()
+      todoItem <- TodoRepository.get(Todo.Id(id))
     } yield {
       todoItem match {
         case Some(todoEntity) =>
-          Ok(
-            views.html.pages
-              .Edit(
-                vv,
-                todoEntity.id,
-                updateForm.fill(
-                  UpdateFormData(
-                    title      = todoEntity.v.title,
-                    body       = todoEntity.v.body,
-                    categoryId = todoEntity.v.categoryId,
-                    stateValue = todoEntity.v.state.code
-                  )
-                ),
-                categories.map(_.v)
-              )
-          )
+          for {
+            categories <- TodoCategoryRepository.getAll()
+          } yield {
+            Ok(
+              views.html.pages
+                .Edit(
+                  vv,
+                  todoEntity.id,
+                  updateForm.fill(
+                    UpdateFormData(
+                      title      = todoEntity.v.title,
+                      body       = todoEntity.v.body,
+                      categoryId = todoEntity.v.categoryId,
+                      stateValue = todoEntity.v.state.code
+                    )
+                  ),
+                  categories.map(_.v)
+                )
+            )
+          }
         case None             => Ok("Not FOUND")
       }
     }
