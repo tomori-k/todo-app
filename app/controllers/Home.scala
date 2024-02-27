@@ -162,7 +162,7 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
                 )
             )
           }
-        case None             => Ok("Not FOUND")
+        case None             => NotFound("No such a todo")
       }
     }
   }
@@ -180,7 +180,7 @@ class HomeController @Inject() (val controllerComponents: ControllerComponents)(
           )
           Ok(views.html.pages.TodoView(vv, v.v))
         }
-        case None    => Ok("Not FOUND")
+        case None    => NotFound("No such a todo")
       }
     }
   }
